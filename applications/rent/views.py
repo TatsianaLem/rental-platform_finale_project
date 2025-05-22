@@ -1,6 +1,6 @@
 from rest_framework import viewsets, permissions, filters
 from applications.rent.models import Rent
-from applications.rent.permissions import IsOwnerOrStaff
+from applications.rent.permissions import IsOwnerOrStaff, IsLandlordOrReadOnly
 from applications.rent.serializers import RentSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from applications.rent.filters import RentFilter
@@ -9,7 +9,11 @@ from applications.rent.filters import RentFilter
 class RentViewSet(viewsets.ModelViewSet):
     queryset = Rent.objects.all()
     serializer_class = RentSerializer
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrStaff]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsOwnerOrStaff,
+        IsLandlordOrReadOnly
+    ]
 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = RentFilter
