@@ -5,6 +5,7 @@ from applications.rent.choices.room_type import RoomType
 
 class RentSerializer(serializers.ModelSerializer):
     room_type_display = serializers.SerializerMethodField(read_only=True)
+    price_display = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Rent
@@ -15,6 +16,7 @@ class RentSerializer(serializers.ModelSerializer):
             "description",
             "address",
             "price",
+            "price_display",
             "rooms_count",
             "room_type",
             "room_type_display",
@@ -26,6 +28,9 @@ class RentSerializer(serializers.ModelSerializer):
 
     def get_room_type_display(self, obj):
         return RoomType[obj.room_type].value if obj.room_type else None
+
+    def get_price_display(self, obj):
+        return f"{obj.price} € / month"
 
     def create(self, validated_data):
         user = self.context["request"].user
