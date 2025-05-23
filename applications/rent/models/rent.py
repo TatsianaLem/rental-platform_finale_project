@@ -13,7 +13,10 @@ class Rent(models.Model):
     )
     title = models.CharField(_("Title"), max_length=100)
     description = models.TextField(_("Description"))
+    city = models.CharField(max_length=50)
     address = models.CharField(_("Address"), max_length=170)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
     price = models.DecimalField(_("Price"), max_digits=10, decimal_places=2)
     rooms_count = models.PositiveSmallIntegerField(_("Rooms count"))
     room_type = models.CharField(
