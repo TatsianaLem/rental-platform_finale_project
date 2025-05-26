@@ -20,7 +20,8 @@ class RentViewSet(viewsets.ModelViewSet):
 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = RentFilter
-    search_fields = ['title', 'description']
+    search_fields = ['title', 'description', 'address']
+    filterset_fields = ['city', 'room_type', 'rooms_count']
     ordering_fields = ['price', 'created_at']
     ordering = ['-created_at']
 

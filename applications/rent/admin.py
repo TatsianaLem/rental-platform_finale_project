@@ -1,30 +1,13 @@
 from django.contrib import admin, messages
 from django.utils import timezone
 from applications.rent.models import Rent, Booking
+from applications.rent.filters import (
+    CityListFilter,
+    RoomTypeFilter,
+    RoomsCountFilter,
+    PriceRangeDropdownFilter,
+)
 
-class PriceRangeFilter(admin.SimpleListFilter):
-    title = "Price range"
-    parameter_name = "price_range"
-
-    def lookups(self, request, model_admin):
-        return [
-            ("<500", "Less than 500 €"),
-            ("500-1000", "500 € – 1000 €"),
-            ("1000-1500", "1000 € – 1500 €"),
-            (">1500", "More than 1500 €"),
-        ]
-
-    def queryset(self, request, queryset):
-        value = self.value()
-        if value == "<500":
-            return queryset.filter(price__lt=500)
-        if value == "500-1000":
-            return queryset.filter(price__gte=500, price__lte=1000)
-        if value == "1000-1500":
-            return queryset.filter(price__gte=1000, price__lte=1500)
-        if value == ">1500":
-            return queryset.filter(price__gt=1500)
-        return queryset
 
 @admin.register(Rent)
 class RentAdmin(admin.ModelAdmin):
@@ -32,6 +15,7 @@ class RentAdmin(admin.ModelAdmin):
         "title",
         "owner",
         "city",
+        #"price",
         "address",
         "price_display",
         "rooms_count",
@@ -43,12 +27,12 @@ class RentAdmin(admin.ModelAdmin):
     )
     list_filter = (
         "is_active",
-        "room_type",
-        "rooms_count",
-        "address",
-        PriceRangeFilter,
+        CityListFilter,
+        RoomTypeFilter,
+        RoomsCountFilter,
+        PriceRangeDropdownFilter,
     )
-    search_fields = ("title", "address", "owner__email")
+    search_fields = ("title", "address", "city", "owner__email")
 
     def price_display(self, obj):
         return f"{obj.price} € / month"

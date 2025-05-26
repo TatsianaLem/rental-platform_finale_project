@@ -1,0 +1,19 @@
+{% load admin_list %}
+
+<form method="get" style="margin-bottom: 1rem;">
+  <label for="{{ spec.parameter_name }}">{{ spec.title }}</label>
+  <select name="{{ spec.parameter_name }}" onchange="this.form.submit();">
+    <option value="">Все</option>
+    {% for val, desc in spec.lookup_choices %}
+      <option value="{{ val }}"{% if val == spec.value %} selected{% endif %}>{{ desc }}</option>
+    {% endfor %}
+  </select>
+
+  
+  {% for param, value in request.GET.items %}
+    {% if param != spec.parameter_name %}
+      <input type="hidden" name="{{ param }}" value="{{ value }}">
+    {% endif %}
+  {% endfor %}
+</form>
+
