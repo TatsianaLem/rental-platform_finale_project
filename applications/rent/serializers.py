@@ -1,8 +1,7 @@
 from rest_framework import serializers
 from applications.rent.models import Rent, Booking
-from django.utils import timezone
+from applications.rent.models.review import Review
 from applications.rent.choices.room_type import RoomType
-from django.db.models import Q
 
 
 
@@ -73,3 +72,10 @@ class BookingSerializer(serializers.ModelSerializer):
 
         return attrs
 
+class ReviewSerializer(serializers.ModelSerializer):
+    author_name = serializers.CharField(source="author.__str__", read_only=True)
+
+    class Meta:
+        model = Review
+        fields = ["id", "rent", "author_name", "rating", "comment", "created_at"]
+        read_only_fields = ["author_name", "created_at"]

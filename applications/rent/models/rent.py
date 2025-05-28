@@ -33,6 +33,7 @@ class Rent(models.Model):
         verbose_name_plural = _("Announcements")
         ordering = ["-created_at"]
         db_table = "rent"
+        default_permissions = ("add", "change", "delete", "view")
 
     def __str__(self):
-        return f"{self.title} — {self.owner}"
+        return f"#{self.id} — {self.title} — {self.owner}"

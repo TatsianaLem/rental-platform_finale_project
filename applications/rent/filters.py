@@ -82,7 +82,8 @@ class RoomTypeFilter(admin.SimpleListFilter):
     parameter_name = "room_type"
 
     def lookups(self, request, model_admin):
-        return Rent.objects.values_list("room_type", "room_type").distinct()
+        types = Rent.objects.values_list("room_type", flat=True).distinct()
+        return [(room_type, room_type) for room_type in sorted(set(types)) if room_type]
 
     def queryset(self, request, queryset):
         value = self.value()
