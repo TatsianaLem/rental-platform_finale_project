@@ -20,5 +20,18 @@ class Review(models.Model):
         if Review.objects.filter(rent=self.rent, author=self.author).exclude(pk=self.pk).exists():
             raise ValidationError("⛔ Вы уже оставляли отзыв к этому объявлению.")
 
+        if not 1 <= self.rating <= 5:
+            raise ValidationError("⛔ Рейтинг должен быть от 1 до 5.")
+
+        from applications.rent.models import Booking
+        has_confirmed_booking = Booking.objects.filter(
+            rent=self.rent,
+            tenant=self.author,
+            status=Booking.Status.CONFIRMED
+        ).exists()
+
+        if not has_confirmed_booking:
+            raise ValidationError("⛔ Вы не можете оставить отзыв, так как не бронировали это жильё.")
+
     def __str__(self):
         return f"{self.author} - {self.rent} ({self.rating})"

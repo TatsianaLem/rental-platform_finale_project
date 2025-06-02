@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+
 from applications.rent.models import Rent, Booking
 from applications.rent.models.review import Review
 from applications.rent.choices.room_type import RoomType
@@ -28,6 +30,7 @@ class RentSerializer(serializers.ModelSerializer):
             "is_active",
             "created_at",
             "updated_at",
+            "reviews",
         ]
         read_only_fields = ["id", "owner", "created_at", "updated_at"]
 
@@ -79,3 +82,12 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ["id", "rent", "author_name", "rating", "comment", "created_at"]
         read_only_fields = ["author_name", "created_at"]
+
+    def validate(self, data):
+        user = self.context["request"].user
+        rent = data.get("rent")
+
+        if Review.objects.filter(rent=rent, author=user).exists():
+            raise ValidationError("⛔ Вы уже оставляли отзыв на это объявление.")
+
+        return data

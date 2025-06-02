@@ -1,4 +1,3 @@
-from django.db.models import Q
 from rest_framework import viewsets, permissions, filters, status
 from applications.rent.models import Rent, Booking
 from applications.rent.models.review import Review
@@ -49,12 +48,18 @@ class BookingViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return Booking.objects.filter(
-            Q(tenant=user) | Q(rent__owner=user)
-        )
+
+        if user.is_superuser:
+            return Booking.objects.all()
+
+        if user.is_authenticated:
+            if hasattr(user, "role") and user.role == "LANDLORD":
+                return Booking.objects.filter(rent__owner=user)
+            return Booking.objects.filter(tenant=user)
+
+        return Booking.objects.none()
 
     def perform_create(self, serializer):
-        print("🛠️ Бронь создаёт:", self.request.user, self.request.user.role) # !!!!!!!!!!!!!!!
         serializer.save(tenant=self.request.user)
 
     @action(detail=True, methods=["patch"], url_path="cancel")
@@ -103,9 +108,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-
-    # def perform_create(self, serializer):
-    #     serializer.save(author=self.request.user)
 
     def perform_create(self, serializer):
         review = serializer.save(author=self.request.user)
