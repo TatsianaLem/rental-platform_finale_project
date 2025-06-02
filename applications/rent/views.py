@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from rest_framework import viewsets, permissions, filters, status
 from applications.rent.models import Rent, Booking
 from applications.rent.models.review import Review
@@ -31,23 +32,29 @@ class RentViewSet(viewsets.ModelViewSet):
     filterset_class = RentFilter
     search_fields = ['title', 'description', 'address']
     filterset_fields = ['city', 'room_type', 'rooms_count']
-    ordering_fields = ['price', 'created_at']
+    ordering_fields = ['price', 'created_at', 'avg_rating']
     ordering = ['-created_at']
 
     def get_queryset(self):
         user = self.request.user
+        qs = Rent.objects.annotate(avg_rating=Avg("reviews__rating"))
+
+        ordering = self.request.query_params.get("ordering")
+
+        if ordering in ["avg_rating", "-avg_rating"]:
+            qs = qs.filter(avg_rating__isnull=False)
 
         if user.is_superuser or user.is_staff:
-            return Rent.objects.all()
+            return qs
 
         if user.is_authenticated:
             if hasattr(user, "role"):
                 if user.role == "LANDLORD":
-                    return Rent.objects.filter(owner=user)
+                    return qs.filter(owner=user)
                 elif user.role == "TENANT":
-                    return Rent.objects.filter(is_active=True)
+                    return qs.filter(is_active=True)
 
-        return Rent.objects.filter(is_active=True)
+        return qs.filter(is_active=True)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)

@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -10,7 +11,7 @@ from applications.rent.choices.room_type import RoomType
 class RentSerializer(serializers.ModelSerializer):
     room_type_display = serializers.SerializerMethodField(read_only=True)
     price_display = serializers.SerializerMethodField(read_only=True)
-    reviews = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    average_rating = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Rent
@@ -31,7 +32,7 @@ class RentSerializer(serializers.ModelSerializer):
             "is_active",
             "created_at",
             "updated_at",
-            "reviews",
+            "average_rating",
         ]
         read_only_fields = ["id", "owner", "created_at", "updated_at"]
 
@@ -40,6 +41,10 @@ class RentSerializer(serializers.ModelSerializer):
 
     def get_price_display(self, obj):
         return f"{obj.price} € / month"
+
+    def get_average_rating(self, obj):
+        avg = obj.reviews.aggregate(Avg("rating"))["rating__avg"]
+        return round(avg, 1) if avg is not None else None
 
     def create(self, validated_data):
         user = self.context["request"].user
