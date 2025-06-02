@@ -47,6 +47,9 @@ class RentAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         user = request.user
 
+        if user.is_superuser:
+            return True
+
         if hasattr(user, "role"):
             if user.role == "TENANT":
                 return False

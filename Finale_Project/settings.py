@@ -46,6 +46,9 @@ INSTALLED_APPS = [
 
     # 3-rd party
     'rest_framework',
+    'rest_framework_simplejwt',
+    'django_filters',
+    'drf_yasg',
 
     # local
     'applications.rent.apps.RentConfig',
