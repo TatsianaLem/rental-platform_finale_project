@@ -10,6 +10,7 @@ from applications.rent.choices.room_type import RoomType
 class RentSerializer(serializers.ModelSerializer):
     room_type_display = serializers.SerializerMethodField(read_only=True)
     price_display = serializers.SerializerMethodField(read_only=True)
+    reviews = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Rent

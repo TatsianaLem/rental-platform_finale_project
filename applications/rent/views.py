@@ -35,9 +35,19 @@ class RentViewSet(viewsets.ModelViewSet):
     ordering = ['-created_at']
 
     def get_queryset(self):
-        if self.request.user.is_staff:
+        user = self.request.user
+
+        if user.is_superuser or user.is_staff:
             return Rent.objects.all()
-        return Rent.objects.filter(owner=self.request.user)
+
+        if user.is_authenticated:
+            if hasattr(user, "role"):
+                if user.role == "LANDLORD":
+                    return Rent.objects.filter(owner=user)
+                elif user.role == "TENANT":
+                    return Rent.objects.filter(is_active=True)
+
+        return Rent.objects.filter(is_active=True)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
