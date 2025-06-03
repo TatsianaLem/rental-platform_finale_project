@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from applications.rent.models import Rent
-from django.core.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError
 
 class Review(models.Model):
     rent = models.ForeignKey(Rent, related_name="reviews", on_delete=models.CASCADE)
@@ -24,14 +24,25 @@ class Review(models.Model):
             raise ValidationError("⛔ Рейтинг должен быть от 1 до 5.")
 
         from applications.rent.models import Booking
-        has_confirmed_booking = Booking.objects.filter(
-            rent=self.rent,
-            tenant=self.author,
-            status=Booking.Status.CONFIRMED
-        ).exists()
+        # has_confirmed_booking = Booking.objects.filter(
+        #     rent=self.rent,
+        #     tenant=self.author,
+        #     status=Booking.Status.CONFIRMED
+        # ).exists()
+        #
+        # if not has_confirmed_booking:
+        #     raise ValidationError("⛔ Вы не можете оставить отзыв, так как не бронировали это жильё.")
 
-        if not has_confirmed_booking:
+        bookings = Booking.objects.filter(
+            rent=self.rent,
+            tenant=self.author
+        )
+
+        if not bookings.exists():
             raise ValidationError("⛔ Вы не можете оставить отзыв, так как не бронировали это жильё.")
+
+        if not bookings.filter(status=Booking.Status.CONFIRMED).exists():
+            raise ValidationError("⛔ Вы не можете оставить отзыв, ваша бронь ещё не подтверждена!")
 
     def __str__(self):
         return f"{self.author} - {self.rent} ({self.rating})"

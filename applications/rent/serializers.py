@@ -92,8 +92,27 @@ class ReviewSerializer(serializers.ModelSerializer):
     def validate(self, data):
         user = self.context["request"].user
         rent = data.get("rent")
+        rating = data.get("rating")
 
-        if Review.objects.filter(rent=rent, author=user).exists():
-            raise ValidationError("⛔ Вы уже оставляли отзыв на это объявление.")
+        review = Review(
+            author=user,
+            rent=rent,
+            rating=rating,
+            comment=data.get("comment", "")
+        )
+
+        try:
+            review.clean()
+        except ValidationError as e:
+            raise ValidationError({"non_field_errors": e.detail if hasattr(e, 'detail') else e.args})
 
         return data
+
+    def create(self, validated_data):
+        validated_data["author"] = self.context["request"].user
+        return super().create(validated_data)
+
+        # if Review.objects.filter(rent=rent, author=user).exists():
+        #     raise ValidationError("⛔ Вы уже оставляли отзыв на это объявление.")
+        #
+        # return data
