@@ -1,4 +1,4 @@
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from rest_framework import viewsets, permissions, filters, status
 from applications.rent.models import Rent, Booking
 from applications.rent.models.review import Review
@@ -38,6 +38,10 @@ class RentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         qs = Rent.objects.annotate(avg_rating=Avg("reviews__rating"))
+
+        search = self.request.query_params.get("search")
+        if search:
+            qs = qs.filter(Q(title__icontains=search) | Q(description__icontains=search))
 
         ordering = self.request.query_params.get("ordering")
 
