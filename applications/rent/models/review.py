@@ -24,14 +24,6 @@ class Review(models.Model):
             raise ValidationError("⛔ Рейтинг должен быть от 1 до 5.")
 
         from applications.rent.models import Booking
-        # has_confirmed_booking = Booking.objects.filter(
-        #     rent=self.rent,
-        #     tenant=self.author,
-        #     status=Booking.Status.CONFIRMED
-        # ).exists()
-        #
-        # if not has_confirmed_booking:
-        #     raise ValidationError("⛔ Вы не можете оставить отзыв, так как не бронировали это жильё.")
 
         bookings = Booking.objects.filter(
             rent=self.rent,

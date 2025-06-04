@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -66,6 +68,9 @@ class BookingSerializer(serializers.ModelSerializer):
         check_in = attrs.get("check_in")
         check_out = attrs.get("check_out")
 
+        if check_in < date.today():
+            raise serializers.ValidationError("⛔ Нельзя забронировать жильё на прошедшую дату.")
+
         if check_in >= check_out:
             raise serializers.ValidationError("Check-out date must be later than check-in date.")
 
@@ -111,8 +116,3 @@ class ReviewSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data["author"] = self.context["request"].user
         return super().create(validated_data)
-
-        # if Review.objects.filter(rent=rent, author=user).exists():
-        #     raise ValidationError("⛔ Вы уже оставляли отзыв на это объявление.")
-        #
-        # return data
